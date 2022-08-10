@@ -1,0 +1,52 @@
+community:
+    path:
+        domain: http://localhost:8088
+        upload: d:/work/data/upload
+
+mybatis-plus:
+    configuration:
+        log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+server:
+    port: 8088
+    servlet:
+        context-path: /community
+
+spring:
+    datasource:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        hikari:
+            idle-timeout: 30000
+            maximum-pool-size: 1
+            minimum-idle: 5
+        password: root
+        type: com.zaxxer.hikari.HikariDataSource
+        url: jdbc:mysql://192.168.1.124:3306/community?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
+        username: root
+    mail:
+        default-encoding: utf-8
+        host: smtp.qq.com
+        password: eqtwbjvdzjrfbagj
+        properties:
+            mail:
+                smtp:
+                    ssl:
+                        enable: true
+        protocol: smtps
+        username: 1254898873@qq.com
+    profiles:
+        active: suifang
+    redis:
+        database: 11
+        host: 192.168.1.124
+        port: 6379
+    thymeleaf:
+        cache: false
+        prefix: classpath:/templates/
+
+
+minio:
+    address: http://192.168.1.124:9010
+    access: minioadmin
+    secret: minioadmin
+    bucket: netty
