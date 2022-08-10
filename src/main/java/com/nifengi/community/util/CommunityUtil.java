@@ -1,12 +1,12 @@
 package com.nifengi.community.util;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.nifengi.community.entity.Message;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.DigestUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Yu
@@ -32,31 +32,36 @@ public class CommunityUtil {
         return DigestUtils.md5DigestAsHex(key.getBytes());
     }
 
-    public static String getJSONString(int code, String msg, Map<String, Object> map) {
-        JSONObject json = new JSONObject();
-        json.put("code", code);
-        json.put("msg", msg);
-        if (map != null) {
-            for (String key : map.keySet()) {
-                json.put(key, map.get(key));
+    public static int getLetterTarget(String conversationId, int userId) {
+        String[] ids = conversationId.split("_");
+        int id0 = Integer.parseInt(ids[0]);
+        int id1 = Integer.parseInt(ids[1]);
+
+
+        if (userId == id0) {
+            return id1;
+        } else {
+            return id0;
+        }
+    }
+
+    public static List<Integer> getLetterIds(List<Message> letterList) {
+        List<Integer> ids = new ArrayList<>();
+
+        int userId = StpUtil.getLoginIdAsInt();
+
+        if (letterList != null && letterList.size() != 0) {
+            for (Message message : letterList) {
+                if (userId == message.getToId() && message.getStatus() == 0) {
+                    ids.add(message.getId());
+                }
             }
         }
-        return json.toJSONString();
+
+        return ids;
     }
 
-    public static String getJSONString(int code, String msg) {
-        return getJSONString(code, msg, null);
-    }
 
-    public static String getJSONString(int code) {
-        return getJSONString(code, null, null);
-    }
 
-    public static void main(String[] args) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("name", "zhangsan");
-        map.put("age", 25);
-        System.out.println(getJSONString(0, "ok", map));
-    }
 
 }

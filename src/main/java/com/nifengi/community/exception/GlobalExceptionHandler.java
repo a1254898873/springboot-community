@@ -1,6 +1,6 @@
 package com.nifengi.community.exception;
 
-import com.nifengi.community.util.JsonResult;
+import com.nifengi.community.entity.response.JsonResult;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;

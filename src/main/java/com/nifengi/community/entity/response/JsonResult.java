@@ -1,4 +1,4 @@
-package com.nifengi.community.util;
+package com.nifengi.community.entity.response;
 
 import com.nifengi.community.exception.BaseException;
 import com.nifengi.community.exception.ErrorEnum;

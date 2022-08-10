@@ -3,9 +3,6 @@ package com.nifengi.community.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.nifengi.community.constant.CommunityConstant;
 import com.nifengi.community.entity.Comment;
 import com.nifengi.community.entity.DiscussPost;
@@ -13,10 +10,8 @@ import com.nifengi.community.entity.User;
 import com.nifengi.community.service.ICommentService;
 import com.nifengi.community.service.IDiscussPostService;
 import com.nifengi.community.service.IUserService;
-import com.nifengi.community.util.CommunityUtil;
-import com.nifengi.community.util.JsonResult;
+import com.nifengi.community.entity.response.JsonResult;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -32,7 +27,7 @@ import java.util.*;
  */
 @RestController
 @RequestMapping("/discuss")
-public class DiscussPostController implements CommunityConstant {
+public class DiscussPostController  {
 
     @Autowired
     private IDiscussPostService discussPostService;
@@ -44,8 +39,7 @@ public class DiscussPostController implements CommunityConstant {
     private ICommentService commentService;
 
 
-    @RequestMapping(path = "/add", method = RequestMethod.POST)
-    @ResponseBody
+    @PostMapping(path = "/add")
     public JsonResult addDiscussPost(String title, String content) {
         if (StpUtil.isLogin() == false) {
             return JsonResult.fail("你还没有登录哦!");
@@ -84,7 +78,7 @@ public class DiscussPostController implements CommunityConstant {
         // 回复: 给评论的评论
         // 评论列表
         List<Comment> commentList = commentService.findCommentsByEntity(
-                ENTITY_TYPE_POST, post.getId(), current-1, limit);
+             CommunityConstant.ENTITY_TYPE_POST, post.getId(), current-1, limit);
         // 评论VO列表
         List<Map<String, Object>> commentVoList = new ArrayList<>();
         if (commentList != null) {
@@ -98,7 +92,7 @@ public class DiscussPostController implements CommunityConstant {
 
                 // 回复列表
                 List<Comment> replyList = commentService.findCommentsByEntity(
-                        ENTITY_TYPE_COMMENT, comment.getId(), 0, Integer.MAX_VALUE);
+                        CommunityConstant.ENTITY_TYPE_COMMENT, comment.getId(), 0, Integer.MAX_VALUE);
                 // 回复VO列表
                 List<Map<String, Object>> replyVoList = new ArrayList<>();
                 if (replyList != null) {
@@ -118,7 +112,7 @@ public class DiscussPostController implements CommunityConstant {
                 commentVo.put("replys", replyVoList);
 
                 // 回复数量
-                int replyCount = commentService.findCommentCount(ENTITY_TYPE_COMMENT, comment.getId());
+                int replyCount = commentService.findCommentCount(CommunityConstant.ENTITY_TYPE_COMMENT, comment.getId());
                 commentVo.put("replyCount", replyCount);
 
                 commentVoList.add(commentVo);

@@ -1,16 +1,19 @@
+server:
+    port: 8088
+    servlet:
+        context-path: /community
+
 community:
     path:
         domain: http://localhost:8088
         upload: d:/work/data/upload
 
+
+
 mybatis-plus:
     configuration:
         log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
-server:
-    port: 8088
-    servlet:
-        context-path: /community
 
 spring:
     datasource:

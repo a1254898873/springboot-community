@@ -4,7 +4,7 @@ package com.nifengi.community.controller;
 import cn.dev33.satoken.stp.StpUtil;
 import com.nifengi.community.entity.User;
 import com.nifengi.community.service.IUserService;
-import com.nifengi.community.util.JsonResult;
+import com.nifengi.community.entity.response.JsonResult;
 import com.nifengi.community.util.MinioUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -23,7 +23,7 @@ import java.util.UUID;
  * @since 2022-07-27
  */
 @RequestMapping("/user")
-@Controller
+@RestController
 public class UserController {
 
     @Autowired
@@ -34,7 +34,6 @@ public class UserController {
 
 
     @RequestMapping(value = "/upload",method = RequestMethod.GET)
-    @ResponseBody
     //用户头像上传访问方法
     public JsonResult upload(@RequestParam(value = "file") MultipartFile file) throws Exception {
         // 为了避免文件名重复，使用UUID重命名文件，将横杠去掉

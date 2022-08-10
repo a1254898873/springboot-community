@@ -9,9 +9,9 @@ import com.nifengi.community.entity.User;
 import com.nifengi.community.entity.request.MessageRequest;
 import com.nifengi.community.service.IMessageService;
 import com.nifengi.community.service.IUserService;
-import com.nifengi.community.util.JsonResult;
+import com.nifengi.community.entity.response.JsonResult;
+import com.nifengi.community.util.CommunityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -80,10 +80,12 @@ public class MessageController {
             return JsonResult.fail("你还没有登录哦!");
         }
 
+        int userId = StpUtil.getLoginIdAsInt();
+
         // 私信列表
-        List<Message> letterList = messageService.findLetters(conversationId, current-1, limit);
+        List<Message> letterList = messageService.findLetters(conversationId, current - 1, limit);
         List<Map<String, Object>> letters = new ArrayList<>();
-        if (letterList != null && letterList.size()!=0) {
+        if (letterList != null && letterList.size() != 0) {
             for (Message message : letterList) {
                 Map<String, Object> map = new HashMap<>();
                 map.put("letter", message);
@@ -95,10 +97,11 @@ public class MessageController {
         JSONObject res = new JSONObject();
         res.put("letters", letters);
         // 私信目标
-        res.put("target", getLetterTarget(conversationId));
+        int id = CommunityUtil.getLetterTarget(conversationId, userId);
+        res.put("target", userService.getById(id));
 
         // 设置已读
-        List<Integer> ids = getLetterIds(letterList);
+        List<Integer> ids = CommunityUtil.getLetterIds(letterList);
         if (!ids.isEmpty()) {
             messageService.readMessage(ids);
         }
@@ -107,39 +110,10 @@ public class MessageController {
 
     }
 
-    private User getLetterTarget(String conversationId) {
-        String[] ids = conversationId.split("_");
-        int id0 = Integer.parseInt(ids[0]);
-        int id1 = Integer.parseInt(ids[1]);
 
 
-        int userId = StpUtil.getLoginIdAsInt();
 
-        if (userId == id0) {
-            return userService.getById(id1);
-        } else {
-            return userService.getById(id0);
-        }
-    }
-
-    private List<Integer> getLetterIds(List<Message> letterList) {
-        List<Integer> ids = new ArrayList<>();
-
-        int userId = StpUtil.getLoginIdAsInt();
-
-        if (letterList != null && letterList.size()!=0) {
-            for (Message message : letterList) {
-                if (userId == message.getToId() && message.getStatus() == 0) {
-                    ids.add(message.getId());
-                }
-            }
-        }
-
-        return ids;
-    }
-
-
-    @RequestMapping(path = "/letter/send", method = RequestMethod.POST)
+    @PostMapping(path = "/letter/send")
     public JsonResult sendLetter(@RequestBody MessageRequest messageRequest) {
 
         if (StpUtil.isLogin() == false) {

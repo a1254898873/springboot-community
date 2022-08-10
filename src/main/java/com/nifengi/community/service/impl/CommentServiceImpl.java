@@ -25,7 +25,7 @@ import java.util.List;
  * @since 2022-07-27
  */
 @Service
-public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements ICommentService, CommunityConstant {
+public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements ICommentService {
 
 
     @Autowired
@@ -60,7 +60,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         int rows = commentMapper.insert(comment);
 
         // 更新帖子评论数量
-        if (comment.getEntityType() == ENTITY_TYPE_POST) {
+        if (comment.getEntityType() == CommunityConstant.ENTITY_TYPE_POST) {
             int count = commentMapper.selectCountByEntity(comment.getEntityType(), comment.getEntityId());
             discussPostService.updateCommentCount(comment.getEntityId(), count);
         }

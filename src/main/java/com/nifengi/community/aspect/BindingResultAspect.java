@@ -1,6 +1,6 @@
 package com.nifengi.community.aspect;
 
-import com.nifengi.community.util.JsonResult;
+import com.nifengi.community.entity.response.JsonResult;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

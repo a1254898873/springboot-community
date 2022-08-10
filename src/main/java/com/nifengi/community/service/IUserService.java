@@ -14,7 +14,7 @@ import java.util.Map;
  * @author nifeng
  * @since 2022-07-27
  */
-public interface IUserService extends IService<User>, CommunityConstant {
+public interface IUserService extends IService<User> {
 
 
     public Map<String, String> register(User user);

@@ -1,17 +1,14 @@
 package com.nifengi.community.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.google.code.kaptcha.Producer;
 import com.nifengi.community.constant.CommunityConstant;
 import com.nifengi.community.entity.User;
 import com.nifengi.community.entity.request.LoginRequest;
 import com.nifengi.community.entity.request.RegisterRequest;
 import com.nifengi.community.service.IUserService;
-import com.nifengi.community.util.CommunityUtil;
-import com.nifengi.community.util.JsonResult;
+import com.nifengi.community.entity.response.JsonResult;
 import com.nifengi.community.util.RedisKeyUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -19,14 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.imageio.ImageIO;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -39,10 +33,10 @@ import java.util.concurrent.TimeUnit;
  * @projectName community
  * @date 2022/7/28 13:27
  */
-@Controller
-public class LoginController implements CommunityConstant {
+@RestController
+public class AuthController {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private IUserService userService;
@@ -57,8 +51,7 @@ public class LoginController implements CommunityConstant {
     private RedisTemplate redisTemplate;
 
 
-    @RequestMapping(path = "/register", method = RequestMethod.POST)
-    @ResponseBody
+    @PostMapping(path = "/register")
     public JsonResult register(@Validated @RequestBody RegisterRequest registerRequest) {
         User user = new User();
         BeanUtils.copyProperties(registerRequest, user);
@@ -82,20 +75,19 @@ public class LoginController implements CommunityConstant {
     }
 
     // http://localhost:8080/community/activation/101/code
-    @RequestMapping(path = "/activation/{userId}/{code}", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(path = "/activation/{userId}/{code}")
     public JsonResult activation(@PathVariable("userId") int userId, @PathVariable("code") String code) {
         int result = userService.activation(userId, code);
-        if (result == ACTIVATION_SUCCESS) {
+        if (result == CommunityConstant.ACTIVATION_SUCCESS) {
             return JsonResult.success("激活成功,您的账号已经可以正常使用了!");
-        } else if (result == ACTIVATION_REPEAT) {
+        } else if (result == CommunityConstant.ACTIVATION_REPEAT) {
             return JsonResult.fail("无效操作,该账号已经激活过了!");
         } else {
             return JsonResult.fail("激活失败,您提供的激活码不正确!");
         }
     }
 
-    @RequestMapping(path = "/kaptcha/{codeKey}", method = RequestMethod.GET)
+    @GetMapping(path = "/kaptcha/{codeKey}")
     public void getKaptcha(@PathVariable String codeKey, HttpServletResponse response) {
         // 生成验证码
         String text = kaptchaProducer.createText();
@@ -118,8 +110,7 @@ public class LoginController implements CommunityConstant {
         }
     }
 
-    @RequestMapping(path = "/login", method = RequestMethod.POST)
-    @ResponseBody
+    @PostMapping(path = "/login")
     public JsonResult login(@RequestBody LoginRequest loginRequest) {
         // 检查验证码
         // String kaptcha = (String) session.getAttribute("kaptcha");
@@ -144,8 +135,7 @@ public class LoginController implements CommunityConstant {
     }
 
 
-    @RequestMapping(path = "/logout", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(path = "/logout")
     public JsonResult logout() {
         StpUtil.logout();
         return JsonResult.success("成功退出");

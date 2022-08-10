@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.nifengi.community.constant.CommunityConstant;
 import com.nifengi.community.entity.User;
 import com.nifengi.community.mapper.UserMapper;
 import com.nifengi.community.service.IUserService;
@@ -125,13 +126,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public int activation(int userId, String code) {
         User user = userMapper.selectById(userId);
         if (user.getStatus() == 1) {
-            return ACTIVATION_REPEAT;
+            return CommunityConstant.ACTIVATION_REPEAT;
         } else if (user.getActivationCode().equals(code)) {
             user.setStatus(1);
             userMapper.updateById(user);
-            return ACTIVATION_SUCCESS;
+            return CommunityConstant.ACTIVATION_SUCCESS;
         } else {
-            return ACTIVATION_FAILURE;
+            return CommunityConstant.ACTIVATION_FAILURE;
         }
     }
 

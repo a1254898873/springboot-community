@@ -6,18 +6,13 @@ import com.nifengi.community.entity.DiscussPost;
 import com.nifengi.community.entity.User;
 import com.nifengi.community.service.IDiscussPostService;
 import com.nifengi.community.service.IUserService;
-import com.nifengi.community.util.JsonResult;
+import com.nifengi.community.entity.response.JsonResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Yu
@@ -35,8 +30,7 @@ public class HomeController {
     @Autowired
     private IUserService userService;
 
-    @RequestMapping(path = "/index", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(path = "/index")
     public JsonResult<JSONObject> getIndexPage(int current, int limit) {
         IPage<DiscussPost> page = discussPostService.selectByPage(current,limit);
         List<JSONObject> discussPosts = new ArrayList<>();
