@@ -9,6 +9,7 @@ import com.nifengi.community.entity.DiscussPost;
 import com.nifengi.community.entity.User;
 import com.nifengi.community.service.ICommentService;
 import com.nifengi.community.service.IDiscussPostService;
+import com.nifengi.community.service.ILikeService;
 import com.nifengi.community.service.IUserService;
 import com.nifengi.community.entity.response.JsonResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,9 @@ public class DiscussPostController  {
     @Autowired
     private ICommentService commentService;
 
+    @Autowired
+    private ILikeService likeService;
+
 
     @PostMapping(path = "/add")
     public JsonResult addDiscussPost(String title, String content) {
@@ -63,6 +67,10 @@ public class DiscussPostController  {
 
     @RequestMapping(path = "/detail/{discussPostId}", method = RequestMethod.GET)
     public JsonResult getDiscussPost(@PathVariable("discussPostId") int discussPostId, int current,int limit) {
+        if (StpUtil.isLogin() == false) {
+            return JsonResult.fail("你还没有登录哦!");
+        }
+        int userId = StpUtil.getLoginIdAsInt();
         // 帖子
         DiscussPost post = discussPostService.getById(discussPostId);
         JSONObject res = new JSONObject();
@@ -70,6 +78,16 @@ public class DiscussPostController  {
         // 作者
         User user = userService.getById(post.getUserId());
         res.put("user",user);
+        //点赞
+        //点赞数量 1代表帖子 2代表评论
+        long discussPostLikeCount = likeService.findEntityLikeCount(1, discussPostId);
+        // 状态
+        int discussPostLikeStatus = likeService.findEntityLikeStatus(userId, 1, discussPostId);
+        // 返回的结果
+        Map<String, Object> discussPostLike = new HashMap<>();
+        discussPostLike.put("likeCount", discussPostLikeCount);
+        discussPostLike.put("likeStatus", discussPostLikeStatus);
+        res.put("like",discussPostLike);
 
 
 
@@ -105,6 +123,15 @@ public class DiscussPostController  {
                         // 回复目标
                         User target = reply.getTargetId() == 0 ? null : userService.getById(reply.getTargetId());
                         replyVo.put("target", target);
+                        //点赞数量 1代表帖子 2代表评论
+                        long replyLikeCount = likeService.findEntityLikeCount(2, reply.getId());
+                        // 状态
+                        int replyLikeStatus = likeService.findEntityLikeStatus(userId, 2, reply.getId());
+                        // 返回的结果
+                        Map<String, Object> replyLike = new HashMap<>();
+                        replyLike.put("likeCount", replyLikeCount);
+                        replyLike.put("likeStatus", replyLikeStatus);
+                        replyVo.put("like",replyLike);
 
                         replyVoList.add(replyVo);
                     }
@@ -114,6 +141,16 @@ public class DiscussPostController  {
                 // 回复数量
                 int replyCount = commentService.findCommentCount(CommunityConstant.ENTITY_TYPE_COMMENT, comment.getId());
                 commentVo.put("replyCount", replyCount);
+
+                //点赞数量 1代表帖子 2代表评论
+                long commentLikeCount = likeService.findEntityLikeCount(2, comment.getId());
+                // 状态
+                int commentLikeStatus = likeService.findEntityLikeStatus(userId, 2, comment.getId());
+                // 返回的结果
+                Map<String, Object> commentLike = new HashMap<>();
+                commentLike.put("likeCount", commentLikeCount);
+                commentLike.put("likeStatus", commentLikeStatus);
+                commentVo.put("like",commentLike);
 
                 commentVoList.add(commentVo);
             }
