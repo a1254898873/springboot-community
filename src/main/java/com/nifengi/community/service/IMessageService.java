@@ -29,7 +29,17 @@ public interface IMessageService extends IService<Message> {
 
     public int addMessage(Message message);
 
+    public int addNotice(Message message);
+
     public int readMessage(List<Integer> ids);
+
+    public Message findLatestNotice(int userId, String topic);
+
+    public int findNoticeCount(int userId, String topic);
+
+    public int findNoticeUnreadCount(int userId, String topic);
+
+    public List<Message> findNotices(int userId, String topic, int offset, int limit);
 
 
 }

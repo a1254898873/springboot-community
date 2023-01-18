@@ -46,6 +46,11 @@ spring:
     thymeleaf:
         cache: false
         prefix: classpath:/templates/
+    rabbitmq:
+        host: 192.168.1.124
+        port: 5672
+        username: admin
+        password: admin
 
 
 minio:
@@ -53,3 +58,4 @@ minio:
     access: minioadmin
     secret: minioadmin
     bucket: netty
+

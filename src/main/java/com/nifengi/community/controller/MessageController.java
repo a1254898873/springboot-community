@@ -4,6 +4,7 @@ package com.nifengi.community.controller;
 import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.nifengi.community.constant.CommunityConstant;
 import com.nifengi.community.entity.Message;
 import com.nifengi.community.entity.User;
 import com.nifengi.community.entity.request.MessageRequest;
@@ -12,7 +13,9 @@ import com.nifengi.community.service.IUserService;
 import com.nifengi.community.entity.response.JsonResult;
 import com.nifengi.community.util.CommunityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.HtmlUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -146,5 +149,135 @@ public class MessageController {
         return JsonResult.success("发送成功");
 
     }
+
+    @RequestMapping(path = "/notice/list", method = RequestMethod.GET)
+    public JsonResult getNoticeList() {
+        if (StpUtil.isLogin() == false) {
+            return JsonResult.fail("你还没有登录哦!");
+        }
+
+        int userId = StpUtil.getLoginIdAsInt();
+
+        JSONObject res = new JSONObject();
+
+        // 查询评论类通知
+        Message message = messageService.findLatestNotice(userId, CommunityConstant.TOPIC_COMMENT);
+        if (message != null) {
+            Map<String, Object> messageVO = new HashMap<>();
+            messageVO.put("message", message);
+
+            String content = HtmlUtils.htmlUnescape(message.getContent());
+            Map<String, Object> data = JSONObject.parseObject(content, HashMap.class);
+
+            messageVO.put("user", userService.getById((Integer) data.get("userId")));
+            messageVO.put("entityType", data.get("entityType"));
+            messageVO.put("entityId", data.get("entityId"));
+            messageVO.put("postId", data.get("postId"));
+
+            int count = messageService.findNoticeCount(userId, CommunityConstant.TOPIC_COMMENT);
+            messageVO.put("count", count);
+
+            int unread = messageService.findNoticeUnreadCount(userId, CommunityConstant.TOPIC_COMMENT);
+            messageVO.put("unread", unread);
+
+            res.put("commentNotice",messageVO);
+        }
+
+        // 查询点赞类通知
+        message = messageService.findLatestNotice(userId, CommunityConstant.TOPIC_LIKE);
+        if (message != null) {
+            Map<String, Object> messageVO = new HashMap<>();
+            messageVO.put("message", message);
+
+            String content = HtmlUtils.htmlUnescape(message.getContent());
+            Map<String, Object> data = JSONObject.parseObject(content, HashMap.class);
+
+            messageVO.put("user", userService.getById((Integer) data.get("userId")));
+            messageVO.put("entityType", data.get("entityType"));
+            messageVO.put("entityId", data.get("entityId"));
+            messageVO.put("postId", data.get("postId"));
+
+            int count = messageService.findNoticeCount(userId, CommunityConstant.TOPIC_LIKE);
+            messageVO.put("count", count);
+
+            int unread = messageService.findNoticeUnreadCount(userId, CommunityConstant.TOPIC_LIKE);
+            messageVO.put("unread", unread);
+
+            res.put("likeNotice", messageVO);
+        }
+
+        // 查询关注类通知
+        message = messageService.findLatestNotice(userId, CommunityConstant.TOPIC_FOLLOW);
+        if (message != null) {
+            Map<String, Object> messageVO = new HashMap<>();
+            messageVO.put("message", message);
+            String content = HtmlUtils.htmlUnescape(message.getContent());
+            Map<String, Object> data = JSONObject.parseObject(content, HashMap.class);
+
+            messageVO.put("user", userService.getById((Integer) data.get("userId")));
+            messageVO.put("entityType", data.get("entityType"));
+            messageVO.put("entityId", data.get("entityId"));
+
+            int count = messageService.findNoticeCount(userId, CommunityConstant.TOPIC_FOLLOW);
+            messageVO.put("count", count);
+
+            int unread = messageService.findNoticeUnreadCount(userId, CommunityConstant.TOPIC_FOLLOW);
+            messageVO.put("unread", unread);
+
+
+            res.put("followNotice", messageVO);
+        }
+
+        // 查询未读消息数量
+        int letterUnreadCount = messageService.findLetterUnreadCount(userId, null);
+        res.put("letterUnreadCount", letterUnreadCount);
+        int noticeUnreadCount = messageService.findNoticeUnreadCount(userId, null);
+        res.put("noticeUnreadCount", noticeUnreadCount);
+
+        return JsonResult.success(res);
+    }
+
+    @RequestMapping(path = "/notice/detail/{topic}", method = RequestMethod.GET)
+    public JsonResult getNoticeDetail(@PathVariable("topic") String topic, int current, int limit) {
+        if (StpUtil.isLogin() == false) {
+            return JsonResult.fail("你还没有登录哦!");
+        }
+
+        int userId = StpUtil.getLoginIdAsInt();
+
+        JSONObject res = new JSONObject();
+
+        List<Message> noticeList = messageService.findNotices(userId, topic, current-1, limit);
+        List<Map<String, Object>> noticeVoList = new ArrayList<>();
+        if (noticeList != null) {
+            for (Message notice : noticeList) {
+                Map<String, Object> map = new HashMap<>();
+                // 通知
+                map.put("notice", notice);
+                // 内容
+                String content = HtmlUtils.htmlUnescape(notice.getContent());
+                Map<String, Object> data = JSONObject.parseObject(content, HashMap.class);
+                map.put("user", userService.getById((Integer) data.get("userId")));
+                map.put("entityType", data.get("entityType"));
+                map.put("entityId", data.get("entityId"));
+                map.put("postId", data.get("postId"));
+                // 通知作者
+                map.put("fromUser", userService.getById(notice.getFromId()));
+
+                noticeVoList.add(map);
+            }
+        }
+        res.put("notices",noticeVoList);
+
+        // 设置已读
+        List<Integer> ids = CommunityUtil.getLetterIds(noticeList);
+        if (!ids.isEmpty()) {
+            messageService.readMessage(ids);
+        }
+
+        return JsonResult.success(res);
+    }
+
+
 
 }

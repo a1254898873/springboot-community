@@ -3,10 +3,12 @@ package com.nifengi.community.controller;
 import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.nifengi.community.constant.CommunityConstant;
+import com.nifengi.community.entity.Event;
 import com.nifengi.community.entity.User;
 import com.nifengi.community.entity.request.FolloweRequest;
 import com.nifengi.community.entity.request.UnFolloweRequest;
 import com.nifengi.community.entity.response.JsonResult;
+import com.nifengi.community.event.EventProducer;
 import com.nifengi.community.service.IFollowService;
 import com.nifengi.community.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,9 @@ public class FollowController {
     @Autowired
     private IUserService userService;
 
+    @Autowired
+    private EventProducer eventProducer;
+
 
     @RequestMapping(path = "/follow", method = RequestMethod.POST)
     public JsonResult follow(@RequestBody FolloweRequest followeRequest) {
@@ -45,13 +50,13 @@ public class FollowController {
         followService.follow(userId, followeRequest.getEntityType(), followeRequest.getEntityId());
 
         // 触发关注事件
-//        Event event = new Event()
-//                .setTopic(TOPIC_FOLLOW)
-//                .setUserId(hostHolder.getUser().getId())
-//                .setEntityType(entityType)
-//                .setEntityId(entityId)
-//                .setEntityUserId(entityId);
-//        eventProducer.fireEvent(event);
+        Event event = new Event()
+                .setTopic(CommunityConstant.TOPIC_FOLLOW)
+                .setUserId(userId)
+                .setEntityType(followeRequest.getEntityType())
+                .setEntityId(followeRequest.getEntityId())
+                .setEntityUserId(followeRequest.getEntityId());
+        eventProducer.fireEvent(event);
 
         return JsonResult.success("已关注");
     }
